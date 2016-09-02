@@ -44,9 +44,11 @@ public class TicTacActivity extends AppCompatActivity {
     Document syncDoc;
     List syncLog;
     Map syncState;
+    GridView boardView;
     ImageAdapter board;
     TextView logView;
     TextView statusView;
+    TextView winText;
     String identity;
 
     String TAG = "TicTacActivity";
@@ -60,15 +62,16 @@ public class TicTacActivity extends AppCompatActivity {
 
         logView = (TextView) findViewById(R.id.logView);
         statusView = (TextView) findViewById(R.id.statusView);
+        winText = (TextView) findViewById(R.id.winText);
 
         identity = generateRandomIdentity();
         logView.append("I am player "+identity+"\n");
 
-        GridView gridview = (GridView) findViewById(R.id.board);
+        boardView = (GridView) findViewById(R.id.board);
         board = new ImageAdapter(this);
-        gridview.setAdapter(board);
+        boardView.setAdapter(board);
 
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        boardView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
                 toggleCellValue(position);
@@ -128,6 +131,45 @@ public class TicTacActivity extends AppCompatActivity {
             Log.e("Board", "Cannot serialize board", ex);
             // so what
         }
+    }
+
+    int checkWinner()
+    {
+        // horizontal
+        if (board.getItem(0).equals(board.getItem(1)) && board.getItem(1).equals(board.getItem(2)))
+            return (Integer)board.getItem(0);
+        if (board.getItem(3).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(5)))
+            return (Integer)board.getItem(3);
+        if (board.getItem(6).equals(board.getItem(7)) && board.getItem(7).equals(board.getItem(8)))
+            return (Integer)board.getItem(6);
+        // vertical
+        if (board.getItem(0).equals(board.getItem(3)) && board.getItem(3).equals(board.getItem(6)))
+            return (Integer)board.getItem(0);
+        if (board.getItem(1).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(7)))
+            return (Integer)board.getItem(1);
+        if (board.getItem(2).equals(board.getItem(5)) && board.getItem(5).equals(board.getItem(8)))
+            return (Integer)board.getItem(2);
+        // diagonal
+        if (board.getItem(0).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(8)))
+            return (Integer)board.getItem(0);
+        if (board.getItem(2).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(6)))
+            return (Integer)board.getItem(2);
+        return R.drawable.empty;
+    }
+
+    void endGameOnWin()
+    {
+        final int winner = checkWinner();
+        Timber.d("Winner check: " + winner);
+        if (winner == R.drawable.empty) return;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                boardView.setEnabled(false);
+                winText.setVisibility(View.VISIBLE);
+                winText.setText(winner == R.drawable.cross ? "X has won" : "O has won");
+            }
+        });
     }
 
     // Cycle X, O, empty in cell
@@ -245,6 +287,7 @@ public class TicTacActivity extends AppCompatActivity {
                 Log.d(TAG, "Remote game document update");
                 try {
                     renderBoard(data);
+                    endGameOnWin();
                 } catch (JSONException ex) {
                     Log.e("TicTacTwilio", "Exception in JSON", ex);
                 }
@@ -254,6 +297,7 @@ public class TicTacActivity extends AppCompatActivity {
                 Log.d(TAG, "Local game document update");
                 try {
                     renderBoard(data);
+                    endGameOnWin();
                 } catch (JSONException ex) {
                     Log.e("TicTacTwilio", "Exception in JSON", ex);
                 }
@@ -343,11 +387,13 @@ public class TicTacActivity extends AppCompatActivity {
 
     void newGame()
     {
+        winText.setVisibility(View.GONE);
         for (int position = 0; position < 9; ++position) {
             board.setItem(position, R.drawable.empty);
         }
         syncBoard();
         setTurn("E");
+        boardView.setEnabled(true);
     }
 
     void renderBoard(JSONObject data) throws JSONException
