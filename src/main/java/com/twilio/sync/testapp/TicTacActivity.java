@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
+import java.text.DecimalFormat;
 
 import timber.log.Timber;
 
@@ -120,8 +121,11 @@ public class TicTacActivity extends AppCompatActivity {
 
     void syncBoard() {
         try {
+            Long flowId = System.currentTimeMillis();
+            Timber.e("Set data flow id:" + new DecimalFormat("#").format(flowId));
+
             JSONObject newData = serialiseBoard();
-            syncDoc.setData(newData, 0, new SuccessListener<Void>() {
+            syncDoc.setData(newData, flowId, new SuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void dummy) {
                     Log.d("Board", "Synced game state successfully");
@@ -294,7 +298,8 @@ public class TicTacActivity extends AppCompatActivity {
             }
             @Override
             public void onResultUpdated(long flowId, JSONObject data) {
-                Log.d(TAG, "Local game document update");
+                Timber.d("Local game document update");
+                Timber.e("On result updated with flow id:" + new DecimalFormat("#").format(flowId));
                 try {
                     renderBoard(data);
                     endGameOnWin();
