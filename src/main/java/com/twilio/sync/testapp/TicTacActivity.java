@@ -17,6 +17,7 @@ import com.twilio.sync.Client;
 import com.twilio.sync.ErrorInfo;
 import com.twilio.sync.List;
 import com.twilio.sync.ListObserver;
+import com.twilio.sync.ListPaginator;
 import com.twilio.sync.Map;
 import com.twilio.sync.MapObserver;
 import com.twilio.sync.Options;
@@ -32,6 +33,7 @@ import org.w3c.dom.Text;
 
 import com.google.gson.JsonObject;//for login, temp
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
@@ -341,6 +343,25 @@ public class TicTacActivity extends AppCompatActivity {
             public void onSuccess(List result) {
                 Log.d(TAG, "Opened game log");
                 syncLog = result;
+
+                syncLog.queryItems(syncLog.queryOptions(), new SuccessListener<ListPaginator>() {
+                    @Override
+                    public void onSuccess(ListPaginator paginator) {
+                        final long size = paginator.getPageSize();
+                        final ArrayList<List.Item> items = paginator.getItems();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Timber.d("Received page with "+size+" items");
+                                logView.append("Received page with "+size+" items\n");
+                                for (List.Item item : items) {
+                                    Timber.d(item.getData().toString());
+                                    logView.append(item.getData().toString()+"\n");
+                                }
+                            }
+                        });
+                    }
+                });
             }
         });
 
