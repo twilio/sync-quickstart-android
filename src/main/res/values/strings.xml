@@ -2,4 +2,5 @@
     <string name="app_name">Tic-Tac-Twilio</string>
     <string name="error_retrieving_access_token">Cannot retrieve token</string>
     <string name="new_game">Start new game</string>
+    <string name="shutdown_client">Shutdown Sync Client</string>
 </resources>

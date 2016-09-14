@@ -11,11 +11,17 @@
     tools:context="com.twilio.sync.testapp.TicTacActivity">
 
     <Button
+        android:id="@+id/shutdownBtn"
+        android:text="@string/shutdown_client"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"/>
+    <Button
         android:id="@+id/newGame"
         android:text="@string/new_game"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:layout_alignParentBottom="true"/>
+        android:layout_above="@+id/shutdownBtn"/>
     <TextView
         android:id="@+id/logView"
         android:layout_width="match_parent"

@@ -40,6 +40,8 @@ import java.util.Date;
 import java.util.Random;
 import java.util.Set;
 import java.text.DecimalFormat;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import timber.log.Timber;
 
@@ -88,6 +90,14 @@ public class TicTacActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 newGame();
+            }
+        });
+
+        Button shutdown = (Button) findViewById(R.id.shutdownBtn);
+        shutdown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                shutdownClient();
             }
         });
 
@@ -162,6 +172,12 @@ public class TicTacActivity extends AppCompatActivity {
         if (board.getItem(2).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(6)))
             return (Integer)board.getItem(2);
         return R.drawable.empty;
+    }
+
+    void shutdownClient()
+    {
+        syncClient.shutdown();
+        Timber.e("CLIENT SHUTDOWN COMPLETED");
     }
 
     void endGameOnWin()
