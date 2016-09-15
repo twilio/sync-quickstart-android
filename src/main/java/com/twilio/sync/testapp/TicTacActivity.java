@@ -20,6 +20,7 @@ import com.twilio.sync.ListObserver;
 import com.twilio.sync.ListPaginator;
 import com.twilio.sync.Map;
 import com.twilio.sync.MapObserver;
+import com.twilio.sync.MapPaginator;
 import com.twilio.sync.Options;
 import com.twilio.sync.Document;
 import com.twilio.sync.DocumentObserver;
@@ -407,6 +408,26 @@ public class TicTacActivity extends AppCompatActivity {
                 Log.d(TAG, "Opened game state");
                 syncState = result;
                 setTurn("E"); // force game start
+
+                syncState.queryItems(syncState.queryOptions(), new SuccessListener<MapPaginator>() {
+                    @Override
+                    public void onSuccess(MapPaginator paginator) {
+                        final long size = paginator.getPageSize();
+                        final ArrayList<Map.Item> items = paginator.getItems();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Timber.d("Received page with "+size+" items");
+                                logView.append("Received page with "+size+" items\n");
+                                for (Map.Item item : items) {
+                                    Timber.d(item.getKey() + " => " + item.getData().toString());
+                                    statusView.append(item.getKey() + " => " + item.getData().toString()+"\n");
+                                }
+                            }
+                        });
+                    }
+                });
+
             }
         });
     }
