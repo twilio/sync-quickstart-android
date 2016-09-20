@@ -45,6 +45,7 @@ configurations {
 dependencies {
     compile 'com.android.support:appcompat-v7:24.1.1'
     compile 'com.koushikdutta.ion:ion:2.1.7'
+    compile 'com.jakewharton.timber:timber:4.3.0'
     compile project(':sdk')
 }
 

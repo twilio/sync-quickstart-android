@@ -1,5 +1,6 @@
 package com.twilio.sync.testapp;
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -8,11 +9,16 @@ import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.twilio.sync.Client;
+import com.twilio.sync.ErrorInfo;
 import com.twilio.sync.List;
 import com.twilio.sync.ListObserver;
+import com.twilio.sync.Map;
+import com.twilio.sync.MapObserver;
 import com.twilio.sync.Options;
 import com.twilio.sync.Document;
 import com.twilio.sync.DocumentObserver;
@@ -22,20 +28,41 @@ import com.koushikdutta.ion.Ion;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
+
 import com.google.gson.JsonObject;//for login, temp
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.Random;
+import java.util.Set;
+
+import timber.log.Timber;
 
 public class TicTacActivity extends AppCompatActivity {
     Client syncClient;
     Document syncDoc;
     List syncLog;
+    Map syncState;
     ImageAdapter board;
+    TextView logView;
+    TextView statusView;
+    String identity;
 
     String TAG = "TicTacActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Timber.plant(new Timber.DebugTree());
+
         setContentView(R.layout.activity_tic_tac);
+
+        logView = (TextView) findViewById(R.id.logView);
+        statusView = (TextView) findViewById(R.id.statusView);
+
+        identity = generateRandomIdentity();
+        logView.append("I am player "+identity+"\n");
 
         GridView gridview = (GridView) findViewById(R.id.board);
         board = new ImageAdapter(this);
@@ -44,48 +71,143 @@ public class TicTacActivity extends AppCompatActivity {
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-            toggleCellValue(position);
-            try {
-                JSONObject newData = serialiseBoard();
-                syncDoc.setData(newData, 0, new SuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void dummy) {
-                    Log.d("Board", "Synced game state successfully");
-                    }
-                });
-            } catch (JSONException ex) {
-                Log.e("Board", "Cannot serialize board", ex);
-                // so what
+                toggleCellValue(position);
+                syncBoard();
             }
+        });
+
+        Button newGame = (Button) findViewById(R.id.newGame);
+        newGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newGame();
             }
         });
 
         retrieveAccessTokenFromServer();
     }
 
-    // Cycle X, O, empty in cell
-    private void toggleCellValue(int position) {
-        Integer val = (Integer)board.getItem(position);
-        if (val == R.drawable.cross) {
-            val = R.drawable.naught;
-        } else if (val == R.drawable.naught) {
-            val = R.drawable.empty;
-        } else {
-            val = R.drawable.cross;
+    private String generateRandomIdentity() {
+        final String[] names = {
+                "Andres", "Aleks",
+                "Boris",
+                "Colin", "Carl",
+                "Danila",
+                "John", "Joe", "Jill",
+                "Kate", "Kevin", "Kronar",
+                "Lembit",
+                "Mihkel",
+                "Silver"
+        };
+        return names[new Random(System.nanoTime()).nextInt(names.length)];
+    }
+
+    void setTurn(final String turn) {
+        JSONObject obj1 = new JSONObject();
+        try {
+            obj1.put("value", turn);
+        }catch (JSONException ignored) {}
+        syncState.setItem("turn", obj1, 0, new SuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Timber.d("Set turn to "+turn);
+            }
+        });
+    }
+
+    void syncBoard() {
+        try {
+            JSONObject newData = serialiseBoard();
+            syncDoc.setData(newData, 0, new SuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void dummy) {
+                    Log.d("Board", "Synced game state successfully");
+                }
+            });
+        } catch (JSONException ex) {
+            Log.e("Board", "Cannot serialize board", ex);
+            // so what
         }
-        board.setItem(position, val);
+    }
+
+    // Cycle X, O, empty in cell
+    private void toggleCellValue(final int position) {
+        syncState.getItem("turn", 0, new SuccessListener<Map.Item>() {
+            @Override
+            public void onSuccess(Map.Item result) {
+                Timber.d("Received map item "+result.getData().toString());
+                String state = result.getData().optString("value", "E");
+
+                if (state.contentEquals("E")) {
+                    // start a new game
+                    setTurn("X");
+                    state = "X";
+                    JSONObject obj2 = new JSONObject();
+                    try {
+                        obj2.put("value", identity);
+                    }catch (JSONException ignored) {}
+                    syncState.setItem("playerX", obj2, 0, new SuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            Timber.d("Set playerX id");
+                        }
+                    });
+                } else if (state.contentEquals("X")) {
+                    setTurn("O");
+                    state = "O";
+                    JSONObject obj2 = new JSONObject();
+                    try {
+                        obj2.put("value", identity);
+                    }catch (JSONException ignored) {}
+                    syncState.setItem("playerO", obj2, 0, new SuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            Timber.d("Set playerO id");
+                        }
+                    });
+                } else if (state.contentEquals("O")) {
+                    setTurn("X");
+                    state = "X";
+                }
+
+                // Now make a turn
+                Integer val = (Integer)board.getItem(position);
+                if (val == R.drawable.empty) {
+                    val = state.contentEquals("X") ? R.drawable.cross : R.drawable.naught;
+                }
+                board.setItem(position, val);
+
+                try {
+                    JSONObject item = new JSONObject();
+                    item.put("turn", intToSymbol(val));
+                    JSONArray loc = new JSONArray();
+                    loc.put(position / 3);
+                    loc.put(position % 3);
+                    item.put("location", loc);
+                    item.put("when", new Date().getTime() / 1000);
+
+                    syncLog.addItem(item, 0, new SuccessListener<Long>() {
+                        @Override
+                        public void onSuccess(Long result) {
+                            Timber.d("SyncLog item added");
+                        }
+                    });
+                } catch (JSONException xcp) {
+                    Timber.e(xcp, "Cannot serialize log entry");
+                }
+            }
+        });
     }
 
     private void retrieveAccessTokenFromServer() {
         String endpoint_id =
             Secure.getString(this.getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
-        String idChosen = "berkus";
         String endpointIdFull =
-            idChosen + "-" + endpoint_id + "-android-" + getApplication().getPackageName();
+            identity + "-" + endpoint_id + "-android-" + getApplication().getPackageName();
 
         String url = Uri.parse(BuildConfig.SERVER_TOKEN_URL)
                          .buildUpon()
-                         .appendQueryParameter("identity", idChosen)
+                         .appendQueryParameter("identity", identity)
                          .appendQueryParameter("endpoint_id", endpointIdFull)
                          .build()
                          .toString();
@@ -158,6 +280,12 @@ public class TicTacActivity extends AppCompatActivity {
             @Override
             public void onRemoteItemAdded(long itemIndex, final JSONObject itemData) {
                 Log.d("List", "Remote item "+itemIndex+" added "+itemData.toString());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        logView.append(itemData.toString()+"\n");
+                    }
+                });
             }
         }, new SuccessListener<List>() {
             @Override
@@ -166,6 +294,60 @@ public class TicTacActivity extends AppCompatActivity {
                 syncLog = result;
             }
         });
+
+        syncClient.openMap(new Options().withUniqueName("SyncGameState"), new MapObserver() {
+            @Override
+            public void onResultItemSet(long flowId, String itemKey) {
+                Log.d("Map", "Local updated item");
+            }
+
+            @Override
+            public void onResultItemRemoved(long flowId, String itemKey) {
+                Log.d("Map", "Local removed item");
+            }
+
+            @Override
+            public void onResultErrorOccurred(long flowId, ErrorInfo errorCode) {
+                Log.d("Map", "Local error occurred");
+            }
+
+            @Override
+            public void onRemoteItemSet(final String itemKey, final JSONObject itemData) {
+                Log.d("Map", "Remote updated item");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        statusView.append(itemKey + " changed: " + itemData.toString()+"\n");
+                    }
+                });
+            }
+
+            @Override
+            public void onRemoteItemRemoved(String itemKey) {
+                Log.d("Map", "Remote removed item "+itemKey);
+            }
+
+            @Override
+            public void onRemoteErrorOccurred(ErrorInfo errorCode) {
+                Log.d("Map", "Remote error occurred");
+            }
+        }, new SuccessListener<Map>() {
+            @Override
+            public void onSuccess(Map result) {
+                Log.d(TAG, "Opened game state");
+                syncState = result;
+                setTurn("E"); // force game start
+            }
+        });
+    }
+
+    void newGame()
+    {
+        for (int position = 0; position < 9; ++position) {
+            board.setItem(position, R.drawable.empty);
+        }
+        syncBoard();
+        setTurn("E");
     }
 
     void renderBoard(JSONObject data) throws JSONException
@@ -192,16 +374,19 @@ public class TicTacActivity extends AppCompatActivity {
         });
     }
 
+    private String intToSymbol(Integer val) {
+        return val == R.drawable.cross?"X":
+                val == R.drawable.naught?"O":
+                        "";
+    }
+
     JSONObject serialiseBoard() throws JSONException
     {
         JSONArray obj = new JSONArray();
         for (int row = 0; row < 3; ++row) {
             JSONArray arr = new JSONArray();
             for (int col = 0; col < 3; ++col) {
-                Integer val = (Integer)board.getItem(row * 3 + col);
-                arr.put(col, val == R.drawable.cross?"X":
-                             val == R.drawable.naught?"O":
-                                     "");
+                arr.put(col, intToSymbol((Integer)board.getItem(row * 3 + col)));
             }
             obj.put(row, arr);
         }
