@@ -1,4 +1,4 @@
-package com.twilio.sync.testapp;
+package com.twilio.sync.quickstart;
 
 import android.content.Context;
 import android.view.View;

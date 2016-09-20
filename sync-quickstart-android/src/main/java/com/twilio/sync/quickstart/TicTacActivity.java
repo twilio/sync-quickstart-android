@@ -1,4 +1,4 @@
-package com.twilio.sync.testapp;
+package com.twilio.sync.quickstart;
 
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
