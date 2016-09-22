@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import android.net.Uri;
 import android.provider.Settings.Secure;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -123,7 +122,9 @@ public class TicTacActivity extends AppCompatActivity {
         JSONObject obj1 = new JSONObject();
         try {
             obj1.put("value", turn);
-        }catch (JSONException ignored) {}
+        }catch (JSONException xcp) {
+            Timber.e(xcp, "Failed to set json value");
+        }
         syncState.setItem("turn", obj1, 0, new SuccessListener<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -141,12 +142,11 @@ public class TicTacActivity extends AppCompatActivity {
             syncDoc.setData(newData, flowId, new SuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void dummy) {
-                    Log.d("Board", "Synced game state successfully");
+                    Timber.d("Board: Synced game state successfully");
                 }
             });
-        } catch (JSONException ex) {
-            Log.e("Board", "Cannot serialize board", ex);
-            // so what
+        } catch (JSONException xcp) {
+            Timber.e(xcp, "Board: Cannot serialize board");
         }
     }
 
@@ -281,22 +281,22 @@ public class TicTacActivity extends AppCompatActivity {
                          .appendQueryParameter("endpoint_id", endpointIdFull)
                          .build()
                          .toString();
-        Log.d(TAG, "url string : " + url);
+        Timber.d("url string : " + url);
 
-        Log.d(TAG, "retrieveAccessTokenfromServer");
+        Timber.d("retrieveAccessTokenfromServer");
         Ion.with(this)
             .load(url)
             .asString()
             .setCallback(new FutureCallback<String>() {
                 @Override
                 public void onCompleted(Exception e, String accessToken) {
-                    Log.d(TAG, "Ion.onCompleted");
+                    Timber.d("Ion.onCompleted");
                     if (e == null) {
                         createSyncClient(accessToken);
 
-                        Log.d(TAG, "created sync client with token "+accessToken);
+                        Timber.d("created sync client with token "+accessToken);
                     } else {
-                        Log.e(TAG, "Error syncing", e);
+                        Timber.e("Error syncing", e);
                         Toast.makeText(TicTacActivity.this,
                                 R.string.error_retrieving_access_token, Toast.LENGTH_LONG)
                                 .show();
@@ -312,12 +312,12 @@ public class TicTacActivity extends AppCompatActivity {
         syncClient.openDocument(new Options().withUniqueName("SyncGame"), new DocumentObserver() {
             @Override
             public void onRemoteUpdated(JSONObject data) {
-                Log.d(TAG, "Remote game document update");
+                Timber.d("Remote game document update");
                 try {
                     renderBoard(data);
                     endGameOnWin();
-                } catch (JSONException ex) {
-                    Log.e("TicTacTwilio", "Exception in JSON", ex);
+                } catch (JSONException xcp) {
+                    Timber.e(xcp, "Exception in JSON");
                 }
             }
             @Override
@@ -327,19 +327,19 @@ public class TicTacActivity extends AppCompatActivity {
                 try {
                     renderBoard(data);
                     endGameOnWin();
-                } catch (JSONException ex) {
-                    Log.e("TicTacTwilio", "Exception in JSON", ex);
+                } catch (JSONException xcp) {
+                    Timber.e(xcp, "Exception in JSON");
                 }
             }
         }, new SuccessListener<Document>() {
             @Override
             public void onSuccess(Document doc) {
-                Log.d(TAG, "Opened game document");
+                Timber.d("Opened game document");
                 syncDoc = doc;
                 try {
                     renderBoard(syncDoc.getData());
-                } catch (JSONException ex) {
-                    Log.e("TicTacTwilio", "Exception in JSON", ex);
+                } catch (JSONException xcp) {
+                    Timber.e(xcp, "Exception in JSON");
                 }
             }
         });
@@ -347,12 +347,12 @@ public class TicTacActivity extends AppCompatActivity {
         syncClient.openList(new Options().withUniqueName("SyncGameLog"), new ListObserver() {
             @Override
             public void onResultItemAdded(long flowId, long itemIndex) {
-                Log.d("List", "Local item added");
+                Timber.d("List: Local item added");
             }
 
             @Override
             public void onRemoteItemAdded(long itemIndex, final JSONObject itemData) {
-                Log.d("List", "Remote item "+itemIndex+" added "+itemData.toString());
+                Timber.d("List: Remote item "+itemIndex+" added "+itemData.toString());
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -363,7 +363,7 @@ public class TicTacActivity extends AppCompatActivity {
         }, new SuccessListener<List>() {
             @Override
             public void onSuccess(List result) {
-                Log.d(TAG, "Opened game log");
+                Timber.d("Opened game log");
                 syncLog = result;
 
                 syncLog.queryItems(syncLog.queryOptions(), new SuccessListener<ListPaginator>() {
@@ -390,22 +390,22 @@ public class TicTacActivity extends AppCompatActivity {
         syncClient.openMap(new Options().withUniqueName("SyncGameState"), new MapObserver() {
             @Override
             public void onResultItemSet(long flowId, String itemKey) {
-                Log.d("Map", "Local updated item");
+                Timber.d("Map: Local updated item");
             }
 
             @Override
             public void onResultItemRemoved(long flowId, String itemKey) {
-                Log.d("Map", "Local removed item");
+                Timber.d("Map: Local removed item");
             }
 
             @Override
             public void onResultErrorOccurred(long flowId, ErrorInfo errorCode) {
-                Log.d("Map", "Local error occurred");
+                Timber.d("Map: Local error occurred");
             }
 
             @Override
             public void onRemoteItemSet(final String itemKey, final JSONObject itemData) {
-                Log.d("Map", "Remote updated item");
+                Timber.d("Map: Remote updated item");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -416,17 +416,17 @@ public class TicTacActivity extends AppCompatActivity {
 
             @Override
             public void onRemoteItemRemoved(String itemKey) {
-                Log.d("Map", "Remote removed item "+itemKey);
+                Timber.d("Map: Remote removed item "+itemKey);
             }
 
             @Override
             public void onRemoteErrorOccurred(ErrorInfo errorCode) {
-                Log.d("Map", "Remote error occurred");
+                Timber.d("Map: Remote error occurred");
             }
         }, new SuccessListener<Map>() {
             @Override
             public void onSuccess(Map result) {
-                Log.d(TAG, "Opened game state");
+                Timber.d("Opened game state");
                 syncState = result;
                 setTurn("E"); // force game start
 
@@ -466,7 +466,7 @@ public class TicTacActivity extends AppCompatActivity {
 
     void renderBoard(JSONObject data) throws JSONException
     {
-        Log.d("Board", "Received SyncGame "+data.toString());
+        Timber.d("Board: Received SyncGame "+data.toString());
         if (data.has("board")) {
             JSONArray obj = data.getJSONArray("board");
             for (int row = 0; row < 3; ++row) {
@@ -477,7 +477,7 @@ public class TicTacActivity extends AppCompatActivity {
                             item.contentEquals("X")?R.drawable.cross:
                             item.contentEquals("O")?R.drawable.naught:
                                                     R.drawable.empty);
-                    Log.d("Board", "Item at "+row+", "+col+": `"+item+"`");
+                    Timber.d("Board: Item at "+row+", "+col+": `"+item+"`");
                 }
             }
         }
@@ -506,7 +506,7 @@ public class TicTacActivity extends AppCompatActivity {
         }
         JSONObject out = new JSONObject();
         out.put("board", obj);
-        Log.d("Board", "Saving board "+out.toString());
+        Timber.d("Board: Saving board "+out.toString());
         return out;
     }
 }
