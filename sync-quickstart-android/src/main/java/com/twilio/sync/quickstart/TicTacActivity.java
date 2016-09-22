@@ -39,8 +39,6 @@ import java.util.Date;
 import java.util.Random;
 import java.util.Set;
 import java.text.DecimalFormat;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import timber.log.Timber;
 
