@@ -195,8 +195,12 @@ public class TicTacActivity extends AppCompatActivity {
         });
     }
 
-    // Cycle X, O, empty in cell
+    // Set cell value according to current move order
     private void toggleCellValue(final int position) {
+        if ((Integer)board.getItem(position) != R.drawable.empty) {
+            return;
+        }
+
         syncState.getItem("turn", 0, new SuccessListener<Map.Item>() {
             @Override
             public void onSuccess(Map.Item result) {
@@ -210,7 +214,9 @@ public class TicTacActivity extends AppCompatActivity {
                     JSONObject obj2 = new JSONObject();
                     try {
                         obj2.put("value", identity);
-                    }catch (JSONException ignored) {}
+                    }catch (JSONException xcp) {
+                        Timber.e(xcp, "Failed to set json value");
+                    }
                     syncState.setItem("playerX", obj2, 0, new SuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void result) {
@@ -223,7 +229,9 @@ public class TicTacActivity extends AppCompatActivity {
                     JSONObject obj2 = new JSONObject();
                     try {
                         obj2.put("value", identity);
-                    }catch (JSONException ignored) {}
+                    }catch (JSONException xcp) {
+                        Timber.e(xcp, "Failed to set json value");
+                    }
                     syncState.setItem("playerO", obj2, 0, new SuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void result) {
@@ -236,15 +244,12 @@ public class TicTacActivity extends AppCompatActivity {
                 }
 
                 // Now make a turn
-                Integer val = (Integer)board.getItem(position);
-                if (val == R.drawable.empty) {
-                    val = state.contentEquals("X") ? R.drawable.cross : R.drawable.naught;
-                }
-                board.setItem(position, val);
+                final Integer newVal = state.contentEquals("X") ? R.drawable.cross : R.drawable.naught;
+                board.setItem(position, newVal);
 
                 try {
                     JSONObject item = new JSONObject();
-                    item.put("turn", intToSymbol(val));
+                    item.put("turn", intToSymbol(newVal));
                     JSONArray loc = new JSONArray();
                     loc.put(position / 3);
                     loc.put(position % 3);
