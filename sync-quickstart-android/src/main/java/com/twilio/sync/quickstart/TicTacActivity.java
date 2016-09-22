@@ -45,18 +45,16 @@ import java.util.TimerTask;
 import timber.log.Timber;
 
 public class TicTacActivity extends AppCompatActivity {
-    Client syncClient;
-    Document syncDoc;
-    List syncLog;
-    Map syncState;
-    GridView boardView;
-    ImageAdapter board;
-    TextView logView;
-    TextView statusView;
-    TextView winText;
-    String identity;
-
-    String TAG = "TicTacActivity";
+    private Client syncClient;
+    private Document syncDoc;
+    private List syncLog;
+    private Map syncState;
+    private GridView boardView;
+    private ImageAdapter board;
+    private TextView logView;
+    private TextView statusView;
+    private TextView winText;
+    private String identity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
