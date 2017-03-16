@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.twilio.sync.Client;
+import com.twilio.sync.SyncClient;
 import com.twilio.sync.ErrorInfo;
 import com.twilio.sync.List;
 import com.twilio.sync.ListObserver;
@@ -43,7 +43,7 @@ import java.text.DecimalFormat;
 import timber.log.Timber;
 
 public class TicTacActivity extends AppCompatActivity {
-    private Client syncClient;
+    private SyncClient syncClient;
     private Document syncDoc;
     private List syncLog;
     private Map syncState;
@@ -274,7 +274,6 @@ public class TicTacActivity extends AppCompatActivity {
         String url = Uri.parse(BuildConfig.SERVER_TOKEN_URL)
                          .buildUpon()
                          .appendQueryParameter("identity", identity)
-                         .appendQueryParameter("endpoint_id", endpointIdFull)
                          .build()
                          .toString();
         Timber.d("url string : " + url);
@@ -282,17 +281,18 @@ public class TicTacActivity extends AppCompatActivity {
         Timber.d("retrieveAccessTokenfromServer");
         Ion.with(this)
             .load(url)
-            .asString()
-            .setCallback(new FutureCallback<String>() {
+            .asJsonObject()
+            .setCallback(new FutureCallback<JsonObject>() {
                 @Override
-                public void onCompleted(Exception e, String accessToken) {
-                    Timber.d("Ion.onCompleted");
+                public void onCompleted(Exception e, JsonObject tokenServiceResponse) {
+                    final String accessToken = tokenServiceResponse.get("token").getAsString();
+                    Timber.d("Retrieved token: " + accessToken);
                     if (e == null) {
                         createSyncClient(accessToken);
 
-                        Timber.d("created sync client with token "+accessToken);
+                        Timber.d("created sync client as " + tokenServiceResponse.get("identity").getAsString());
                     } else {
-                        Timber.e("Error syncing", e);
+                        Timber.e("Error syncing: " + e);
                         Toast.makeText(TicTacActivity.this,
                                 R.string.error_retrieving_access_token, Toast.LENGTH_LONG)
                                 .show();
@@ -303,7 +303,7 @@ public class TicTacActivity extends AppCompatActivity {
 
     void createSyncClient(String token)
     {
-        syncClient = Client.create(getApplicationContext(), token, Client.Properties.defaultProperties());
+        syncClient = SyncClient.create(getApplicationContext(), token, SyncClient.Properties.defaultProperties());
 
         syncClient.openDocument(new Options().withUniqueName("SyncGame"), new DocumentObserver() {
             @Override
