@@ -266,11 +266,6 @@ public class TicTacActivity extends AppCompatActivity {
     }
 
     private void retrieveAccessTokenFromServer() {
-        String endpoint_id =
-            Secure.getString(this.getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
-        String endpointIdFull =
-            identity + "-" + endpoint_id + "-android-" + getApplication().getPackageName();
-
         String url = Uri.parse(BuildConfig.SERVER_TOKEN_URL)
                          .buildUpon()
                          .appendQueryParameter("identity", identity)
