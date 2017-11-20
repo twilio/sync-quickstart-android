@@ -1,41 +1,33 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 apply plugin: 'maven'
 
 def SERVER_TOKEN_URL = project.hasProperty('SERVER_TOKEN_URL') ? "\""+project.getProperty('SERVER_TOKEN_URL')+"\"" : "\"http://companyfoo.com/token\""
 
-model {
     android {
         compileSdkVersion 23
-        buildToolsVersion "23.0.3"
 
-        defaultConfig.with {
+        defaultConfig {
             applicationId "com.twilio.sync.quickstart"
-            minSdkVersion.apiLevel 21
-            targetSdkVersion.apiLevel 23
+            minSdkVersion 21
+            targetSdkVersion 23
             versionName "0.1"
 
-            buildConfigFields {
-                create() {
-                    type "String"
-                    name "SERVER_TOKEN_URL"
-                    value SERVER_TOKEN_URL
-                }
-            }
+            buildConfigField "String", "SERVER_TOKEN_URL", SERVER_TOKEN_URL
         }
-        lintOptions.with {
+        lintOptions {
           abortOnError false
         }
     }
-}
 
 configurations {
     preCompile
 }
+
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.koushikdutta.ion:ion:2.1.7'
-    compile 'com.jakewharton.timber:timber:4.3.0'
-    compile 'com.twilio:sync-android:0.3.0'
+    implementation 'com.android.support:appcompat-v7:24.1.1'
+    implementation 'com.koushikdutta.ion:ion:2.1.7'
+    implementation 'com.jakewharton.timber:timber:4.3.0'
+    implementation 'com.twilio:sync-android:0.3.0'
 }
 
 tasks.withType(JavaCompile) {
