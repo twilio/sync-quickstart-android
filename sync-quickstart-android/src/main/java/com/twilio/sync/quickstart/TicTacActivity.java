@@ -276,16 +276,23 @@ public class TicTacActivity extends AppCompatActivity {
         Timber.d("retrieveAccessTokenfromServer");
         Ion.with(this)
             .load(url)
-            .asJsonObject()
-            .setCallback(new FutureCallback<JsonObject>() {
+            .asString()
+            .setCallback(new FutureCallback<String>() {
                 @Override
-                public void onCompleted(Exception e, JsonObject tokenServiceResponse) {
-                    final String accessToken = tokenServiceResponse.get("token").getAsString();
+                public void onCompleted(Exception e, String tokenServiceResponse) {
+                    String accessToken = tokenServiceResponse;
+
+                    try {
+                        accessToken = new JSONObject(tokenServiceResponse).getString("token");
+                    } catch (JSONException ex) {
+                        // do nothing
+                    }
+
                     Timber.d("Retrieved token: " + accessToken);
                     if (e == null) {
                         createSyncClient(accessToken);
 
-                        Timber.d("created sync client as " + tokenServiceResponse.get("identity").getAsString());
+                        Timber.d("created sync client as " + identity);
                     } else {
                         Timber.e("Error syncing: " + e);
                         Toast.makeText(TicTacActivity.this,
