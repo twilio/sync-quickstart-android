@@ -27,7 +27,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:24.1.1'
     implementation 'com.koushikdutta.ion:ion:2.1.7'
     implementation 'com.jakewharton.timber:timber:4.3.0'
-    implementation 'com.twilio:sync-android:0.3.0'
+    implementation 'com.twilio:sync-android:0.6.0'
 }
 
 tasks.withType(JavaCompile) {

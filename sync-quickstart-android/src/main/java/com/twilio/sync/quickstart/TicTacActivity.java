@@ -296,45 +296,42 @@ public class TicTacActivity extends AppCompatActivity {
             });
     }
 
-    void createSyncClient(String token)
+    void documentUpdate()
     {
-        syncClient = SyncClient.create(getApplicationContext(), token, SyncClient.Properties.defaultProperties());
+        try {
+            renderBoard(syncDoc.getData());
+            endGameOnWin();
+        } catch (JSONException xcp) {
+            Timber.e(xcp, "Exception in JSON");
+        }
+    }
 
+    void openDocument()
+    {
         syncClient.openDocument(new Options().withUniqueName("SyncGame"), new DocumentObserver() {
             @Override
-            public void onRemoteUpdated(JSONObject data) {
+            public void onRemoteUpdated(JSONObject data, JSONObject prevData) {
                 Timber.d("Remote game document update");
-                try {
-                    renderBoard(data);
-                    endGameOnWin();
-                } catch (JSONException xcp) {
-                    Timber.e(xcp, "Exception in JSON");
-                }
+                documentUpdate();
             }
             @Override
-            public void onResultUpdated(long flowId, JSONObject data) {
+            public void onResultUpdated(long flowId) {
                 Timber.d("Local game document update");
                 Timber.e("On result updated with flow id:" + new DecimalFormat("#").format(flowId));
-                try {
-                    renderBoard(data);
-                    endGameOnWin();
-                } catch (JSONException xcp) {
-                    Timber.e(xcp, "Exception in JSON");
-                }
+                documentUpdate();
             }
         }, new SuccessListener<Document>() {
             @Override
             public void onSuccess(Document doc) {
                 Timber.d("Opened game document");
                 syncDoc = doc;
-                try {
-                    renderBoard(syncDoc.getData());
-                } catch (JSONException xcp) {
-                    Timber.e(xcp, "Exception in JSON");
-                }
+                documentUpdate();
             }
         });
+    }
 
+    void openList()
+    {
         syncClient.openList(new Options().withUniqueName("SyncGameLog"), new ListObserver() {
             @Override
             public void onResultItemAdded(long flowId, long itemIndex) {
@@ -342,14 +339,9 @@ public class TicTacActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onRemoteItemAdded(long itemIndex, final JSONObject itemData) {
-                Timber.d("List: Remote item "+itemIndex+" added "+itemData.toString());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        logView.append(itemData.toString()+"\n");
-                    }
-                });
+            public void onRemoteItemAdded(final List.Item itemSnapshot) {
+                Timber.d("List: Remote item "+itemSnapshot.getIndex()+" added "+itemSnapshot.getData().toString());
+                logView.append(itemSnapshot.getData().toString()+"\n");
             }
         }, new SuccessListener<List>() {
             @Override
@@ -362,22 +354,20 @@ public class TicTacActivity extends AppCompatActivity {
                     public void onSuccess(ListPaginator paginator) {
                         final long size = paginator.getPageSize();
                         final ArrayList<List.Item> items = paginator.getItems();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Timber.d("Received page with "+size+" items");
-                                logView.append("Received page with "+size+" items\n");
-                                for (List.Item item : items) {
-                                    Timber.d(item.getData().toString());
-                                    logView.append(item.getData().toString()+"\n");
-                                }
-                            }
-                        });
+                        Timber.d("Received page with "+size+" items");
+                        logView.append("Received page with "+size+" items\n");
+                        for (List.Item item : items) {
+                            Timber.d(item.getData().toString());
+                            logView.append(item.getData().toString()+"\n");
+                        }
                     }
                 });
             }
         });
+    }
 
+    void openMap()
+    {
         syncClient.openMap(new Options().withUniqueName("SyncGameState"), new MapObserver() {
             @Override
             public void onResultItemSet(long flowId, String itemKey) {
@@ -395,24 +385,14 @@ public class TicTacActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onRemoteItemSet(final String itemKey, final JSONObject itemData) {
+            public void onRemoteItemUpdated(Map.Item itemSnapshot, Map.Item prevItemSnapshot) {
                 Timber.d("Map: Remote updated item");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        statusView.append(itemKey + " changed: " + itemData.toString()+"\n");
-                    }
-                });
+                statusView.append(itemSnapshot.getKey() + " changed: " + itemSnapshot.getData().toString()+"\n");
             }
 
             @Override
-            public void onRemoteItemRemoved(String itemKey) {
-                Timber.d("Map: Remote removed item "+itemKey);
-            }
-
-            @Override
-            public void onRemoteErrorOccurred(ErrorInfo errorCode) {
-                Timber.d("Map: Remote error occurred");
+            public void onRemoteItemRemoved(Map.Item prevDataSnapshot) {
+                Timber.d("Map: Remote removed item "+prevDataSnapshot.getKey());
             }
         }, new SuccessListener<Map>() {
             @Override
@@ -426,22 +406,32 @@ public class TicTacActivity extends AppCompatActivity {
                     public void onSuccess(MapPaginator paginator) {
                         final long size = paginator.getPageSize();
                         final ArrayList<Map.Item> items = paginator.getItems();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Timber.d("Received page with "+size+" items");
-                                logView.append("Received page with "+size+" items\n");
-                                for (Map.Item item : items) {
-                                    Timber.d(item.getKey() + " => " + item.getData().toString());
-                                    statusView.append(item.getKey() + " => " + item.getData().toString()+"\n");
-                                }
-                            }
-                        });
+                        Timber.d("Received page with "+size+" items");
+                        logView.append("Received page with "+size+" items\n");
+                        for (Map.Item item : items) {
+                            Timber.d(item.getKey() + " => " + item.getData().toString());
+                            statusView.append(item.getKey() + " => " + item.getData().toString()+"\n");
+                        }
                     }
                 });
 
             }
         });
+    }
+
+    void createSyncClient(String token)
+    {
+        SyncClient.create(getApplicationContext(), token, SyncClient.Properties.defaultProperties(),
+            new SuccessListener<SyncClient>() {
+                @Override
+                public void onSuccess(SyncClient client) {
+                    syncClient = client;
+                    openDocument();
+                    openList();
+                    openMap();
+                }
+            }
+        );
     }
 
     void newGame()
