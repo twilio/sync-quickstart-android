@@ -3,21 +3,21 @@ apply plugin: 'maven'
 
 def SERVER_TOKEN_URL = project.hasProperty('SERVER_TOKEN_URL') ? "\""+project.getProperty('SERVER_TOKEN_URL')+"\"" : "\"http://companyfoo.com/token\""
 
-    android {
-        compileSdkVersion 23
+android {
+    compileSdkVersion 23
 
-        defaultConfig {
-            applicationId "com.twilio.sync.quickstart"
-            minSdkVersion 21
-            targetSdkVersion 23
-            versionName "0.1"
+    defaultConfig {
+        applicationId "com.twilio.sync.quickstart"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionName "0.1"
 
-            buildConfigField "String", "SERVER_TOKEN_URL", SERVER_TOKEN_URL
-        }
-        lintOptions {
-          abortOnError false
-        }
+        buildConfigField "String", "SERVER_TOKEN_URL", SERVER_TOKEN_URL
     }
+    lintOptions {
+      abortOnError false
+    }
+}
 
 configurations {
     preCompile
