@@ -242,6 +242,7 @@ public class TicTacActivity extends AppCompatActivity {
                 // Now make a turn
                 final Integer newVal = state.contentEquals("X") ? R.drawable.cross : R.drawable.naught;
                 board.setItem(position, newVal);
+                syncBoard();
 
                 try {
                     JSONObject item = new JSONObject();
