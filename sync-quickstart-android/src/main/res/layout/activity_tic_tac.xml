@@ -29,26 +29,26 @@
         android:gravity="bottom"
         android:layout_above="@+id/newGame"
         />
+
     <TextView
         android:id="@+id/logViewTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="List"
         android:layout_above="@+id/logView"
-        />
+        android:text="Move History" />
     <TextView
         android:id="@+id/statusView"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_above="@+id/logViewTitle"
         />
+
     <TextView
         android:id="@+id/statusViewTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Map"
         android:layout_above="@+id/statusView"
-        />
+        android:text="Game State" />
 
     <TextView
         android:id="@+id/winText"
