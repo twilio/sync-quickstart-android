@@ -137,23 +137,23 @@ public class TicTacActivity extends AppCompatActivity {
     int checkWinner()
     {
         // horizontal
-        if (board.getItem(0).equals(board.getItem(1)) && board.getItem(1).equals(board.getItem(2)))
+        if (!board.getItem(0).equals(R.drawable.empty) && board.getItem(0).equals(board.getItem(1)) && board.getItem(1).equals(board.getItem(2)))
             return (Integer)board.getItem(0);
-        if (board.getItem(3).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(5)))
+        if (!board.getItem(3).equals(R.drawable.empty) && board.getItem(3).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(5)))
             return (Integer)board.getItem(3);
-        if (board.getItem(6).equals(board.getItem(7)) && board.getItem(7).equals(board.getItem(8)))
+        if (!board.getItem(6).equals(R.drawable.empty) && board.getItem(6).equals(board.getItem(7)) && board.getItem(7).equals(board.getItem(8)))
             return (Integer)board.getItem(6);
         // vertical
-        if (board.getItem(0).equals(board.getItem(3)) && board.getItem(3).equals(board.getItem(6)))
+        if (!board.getItem(0).equals(R.drawable.empty) && board.getItem(0).equals(board.getItem(3)) && board.getItem(3).equals(board.getItem(6)))
             return (Integer)board.getItem(0);
-        if (board.getItem(1).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(7)))
+        if (!board.getItem(1).equals(R.drawable.empty) && board.getItem(1).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(7)))
             return (Integer)board.getItem(1);
-        if (board.getItem(2).equals(board.getItem(5)) && board.getItem(5).equals(board.getItem(8)))
+        if (!board.getItem(2).equals(R.drawable.empty) && board.getItem(2).equals(board.getItem(5)) && board.getItem(5).equals(board.getItem(8)))
             return (Integer)board.getItem(2);
         // diagonal
-        if (board.getItem(0).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(8)))
+        if (!board.getItem(0).equals(R.drawable.empty) && board.getItem(0).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(8)))
             return (Integer)board.getItem(0);
-        if (board.getItem(2).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(6)))
+        if (!board.getItem(2).equals(R.drawable.empty) && board.getItem(2).equals(board.getItem(4)) && board.getItem(4).equals(board.getItem(6)))
             return (Integer)board.getItem(2);
         return R.drawable.empty;
     }
