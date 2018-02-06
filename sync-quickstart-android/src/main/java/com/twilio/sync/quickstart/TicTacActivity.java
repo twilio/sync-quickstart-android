@@ -134,8 +134,7 @@ public class TicTacActivity extends AppCompatActivity {
         }
     }
 
-    int checkWinner()
-    {
+    int checkWinner() {
         // horizontal
         if (!board.getItem(0).equals(R.drawable.empty) && board.getItem(0).equals(board.getItem(1)) && board.getItem(1).equals(board.getItem(2)))
             return (Integer)board.getItem(0);
@@ -158,14 +157,12 @@ public class TicTacActivity extends AppCompatActivity {
         return R.drawable.empty;
     }
 
-    void shutdownClient()
-    {
+    void shutdownClient() {
         syncClient.shutdown();
         Timber.e("CLIENT SHUTDOWN COMPLETED");
     }
 
-    void endGameOnWin()
-    {
+    void endGameOnWin() {
         final int winner = checkWinner();
         Timber.d("Winner check: " + winner);
         if (winner == R.drawable.empty) return;
@@ -278,8 +275,7 @@ public class TicTacActivity extends AppCompatActivity {
             });
     }
 
-    void documentUpdate()
-    {
+    void documentUpdate() {
         try {
             renderBoard(boardState.getData());
             endGameOnWin();
@@ -288,8 +284,7 @@ public class TicTacActivity extends AppCompatActivity {
         }
     }
 
-    void openBoardState()
-    {
+    void openBoardState() {
         syncClient.openDocument(new Options().withUniqueName("SyncGame"), new DocumentObserver() {
             @Override
             public void onRemoteUpdated(JSONObject data, JSONObject prevData) {
@@ -308,8 +303,7 @@ public class TicTacActivity extends AppCompatActivity {
         });
     }
 
-    void openMoveHistory()
-    {
+    void openMoveHistory() {
         syncClient.openList(new Options().withUniqueName("SyncGameLog"), new ListObserver() {
             @Override
             public void onRemoteItemAdded(final List.Item itemSnapshot) {
@@ -335,8 +329,7 @@ public class TicTacActivity extends AppCompatActivity {
         });
     }
 
-    void openGameState()
-    {
+    void openGameState() {
         syncClient.openMap(new Options().withUniqueName("SyncGameState"), new MapObserver() {
             @Override
             public void onRemoteItemUpdated(Map.Item itemSnapshot, Map.Item prevItemSnapshot) {
@@ -384,8 +377,7 @@ public class TicTacActivity extends AppCompatActivity {
         });
     }
 
-    void newGame()
-    {
+    void newGame() {
         winText.setVisibility(View.GONE);
         for (int position = 0; position < 9; ++position) {
             board.setItem(position, R.drawable.empty);
@@ -395,8 +387,7 @@ public class TicTacActivity extends AppCompatActivity {
         boardView.setEnabled(true);
     }
 
-    void renderBoard(JSONObject data) throws JSONException
-    {
+    void renderBoard(JSONObject data) throws JSONException {
         Timber.d("Board: Received SyncGame "+data.toString());
         if (data.has("board")) {
             JSONArray obj = data.getJSONArray("board");
@@ -425,8 +416,7 @@ public class TicTacActivity extends AppCompatActivity {
                         "";
     }
 
-    JSONObject serialiseBoard() throws JSONException
-    {
+    JSONObject serialiseBoard() throws JSONException {
         JSONArray obj = new JSONArray();
         for (int row = 0; row < 3; ++row) {
             JSONArray arr = new JSONArray();
@@ -446,7 +436,7 @@ public class TicTacActivity extends AppCompatActivity {
      * @param contents must not be null.
      * @return The given string wrapped in { "value": … }.
      */
-    private static JSONObject UnaryJson(String contents){
+    private static JSONObject UnaryJson(String contents) {
         JSONObject X = new JSONObject();
         try {
             X.put("value", contents);
