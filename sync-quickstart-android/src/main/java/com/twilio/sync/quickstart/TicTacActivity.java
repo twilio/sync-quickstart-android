@@ -1,9 +1,9 @@
 package com.twilio.sync.quickstart;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -11,20 +11,22 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
+import com.twilio.sync.Document;
+import com.twilio.sync.DocumentObserver;
 import com.twilio.sync.ErrorInfo;
-import com.twilio.sync.Mutator;
-import com.twilio.sync.SyncClient;
+import com.twilio.sync.EventContext;
 import com.twilio.sync.List;
 import com.twilio.sync.ListObserver;
 import com.twilio.sync.ListPaginator;
 import com.twilio.sync.Map;
 import com.twilio.sync.MapObserver;
+import com.twilio.sync.Mutator;
 import com.twilio.sync.Options;
-import com.twilio.sync.Document;
-import com.twilio.sync.DocumentObserver;
 import com.twilio.sync.SuccessListener;
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
+import com.twilio.sync.SyncClient;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,7 +34,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
-import java.text.DecimalFormat;
 
 import timber.log.Timber;
 
@@ -90,6 +91,10 @@ public class TicTacActivity extends AppCompatActivity {
             }
         });
 
+        if (BuildConfig.DEBUG) {
+            SyncClient.setLogLevel(Log.DEBUG);
+        }
+
         authenticateAndStartSync();
     }
 
@@ -109,9 +114,9 @@ public class TicTacActivity extends AppCompatActivity {
     }
 
     void setTurn(final String turn) {
-        gameStateMap.setItem("turn", UnaryJson(turn), 0, new SuccessListener<Void>() {
+        gameStateMap.setItem("turn", UnaryJson(turn), new SuccessListener<Map.Item>() {
             @Override
-            public void onSuccess(Void result) {
+            public void onSuccess(Map.Item result) {
                 statusView.setText("Next up: Player " + turn +"\n");
             }
         });
@@ -119,13 +124,10 @@ public class TicTacActivity extends AppCompatActivity {
 
     void syncBoard() {
         try {
-            Long flowId = System.currentTimeMillis();
-            Timber.e("Set data flow id:" + new DecimalFormat("#").format(flowId));
-
             JSONObject newData = serialiseBoard();
-            boardState.setData(newData, flowId, new SuccessListener<Void>() {
+            boardState.setData(newData, new SuccessListener<JSONObject>() {
                 @Override
-                public void onSuccess(Void dummy) {
+                public void onSuccess(JSONObject dummy) {
                     Timber.d("Board: Synced game state successfully");
                 }
             });
@@ -179,7 +181,7 @@ public class TicTacActivity extends AppCompatActivity {
     // Set cell value according to current move order
     private void toggleCellValue(final int position) {
         // Whose turn is it?
-        gameStateMap.getItem("turn", 0, new SuccessListener<Map.Item>() {
+        gameStateMap.getItem("turn", new SuccessListener<Map.Item>() {
             @Override
             public void onSuccess(Map.Item result) {
                 String currentPlayer = result.getData().optString("value", "X");
@@ -192,17 +194,17 @@ public class TicTacActivity extends AppCompatActivity {
                 // Now advance to the next player's turn.
                 if (currentPlayer.contentEquals("X")) {
                     setTurn("O");
-                    gameStateMap.setItem("playerX", UnaryJson(identity), 0, new SuccessListener<Void>() {
+                    gameStateMap.setItem("playerX", UnaryJson(identity), new SuccessListener<Map.Item>() {
                         @Override
-                        public void onSuccess(Void result) {
+                        public void onSuccess(Map.Item result) {
                             Timber.d("Set playerX id");
                         }
                     });
                 } else {
                     setTurn("X");
-                    gameStateMap.setItem("playerO", UnaryJson(identity), 0, new SuccessListener<Void>() {
+                    gameStateMap.setItem("playerO", UnaryJson(identity), new SuccessListener<Map.Item>() {
                         @Override
-                        public void onSuccess(Void result) {
+                        public void onSuccess(Map.Item result) {
                             Timber.d("Set playerO id");
                         }
                     });
@@ -218,9 +220,9 @@ public class TicTacActivity extends AppCompatActivity {
                     item.put("location", loc);
                     item.put("when", new Date().getTime() / 1000);
 
-                    playerMoveLog.addItem(item, 0, new SuccessListener<Long>() {
+                    playerMoveLog.addItem(item, List.Item.Metadata.withTtl(600), new SuccessListener<List.Item>() {
                         @Override
-                        public void onSuccess(Long result) {
+                        public void onSuccess(List.Item result) {
                             logView.append(item.toString() + "\n");
                         }
                     });
@@ -232,7 +234,7 @@ public class TicTacActivity extends AppCompatActivity {
     }
 
     private void authenticateAndStartSync() {
-        String url = Uri.parse(BuildConfig.SERVER_TOKEN_URL)
+        String url = Uri.parse(BuildConfig.ACCESS_TOKEN_SERVICE_URL)
                          .buildUpon()
                          .appendQueryParameter("identity", identity)
                          .build()
@@ -259,9 +261,19 @@ public class TicTacActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(SyncClient client) {
                                         syncClient = client;
-                                        openBoardState();
-                                        openMoveHistory();
-                                        openGameState();
+
+                                        syncClient.setConnectionStateListener(new SyncClient.ConnectionStateListener() {
+                                            @Override
+                                            public void onConnectionStateChanged(final SyncClient.ConnectionState newState) {
+                                                Timber.d("Connection status: " + newState.toString());
+
+                                                if (newState == SyncClient.ConnectionState.CONNECTED) {
+                                                    openBoardState();
+                                                    openMoveHistory();
+                                                    openGameState();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                         );
@@ -285,13 +297,9 @@ public class TicTacActivity extends AppCompatActivity {
     }
 
     void openBoardState() {
-        syncClient.openDocument(new Options().withUniqueName("SyncGame"), new DocumentObserver() {
+        syncClient.openDocument(new Options().withUniqueName("SyncGame").withTtl(3600), new DocumentObserver() {
             @Override
-            public void onRemoteUpdated(JSONObject data, JSONObject prevData) {
-                documentUpdate();
-            }
-            @Override
-            public void onResultUpdated(long flowId) {
+            public void onUpdated(EventContext context, JSONObject data, JSONObject prevData) {
                 documentUpdate();
             }
         }, new SuccessListener<Document>() {
@@ -304,9 +312,9 @@ public class TicTacActivity extends AppCompatActivity {
     }
 
     void openMoveHistory() {
-        syncClient.openList(new Options().withUniqueName("SyncGameLog"), new ListObserver() {
+        syncClient.openList(new Options().withUniqueName("SyncGameLog").withTtl(3600), new ListObserver() {
             @Override
-            public void onRemoteItemAdded(final List.Item itemSnapshot) {
+            public void onItemAdded(EventContext context, final List.Item itemSnapshot) {
                 logView.append(itemSnapshot.getData().toString() + "\n");
             }
         }, new SuccessListener<List>() {
@@ -330,9 +338,9 @@ public class TicTacActivity extends AppCompatActivity {
     }
 
     void openGameState() {
-        syncClient.openMap(new Options().withUniqueName("SyncGameState"), new MapObserver() {
+        syncClient.openMap(new Options().withUniqueName("SyncGameState").withTtl(3600), new MapObserver() {
             @Override
-            public void onRemoteItemUpdated(Map.Item itemSnapshot, Map.Item prevItemSnapshot) {
+            public void onItemUpdated(EventContext context, Map.Item itemSnapshot, JSONObject prevItemSnapshot) {
                 logView.append(itemSnapshot.getKey() + " changed: " + itemSnapshot.getData().toString()+"\n");
             }
         }, new SuccessListener<Map>() {
@@ -344,14 +352,14 @@ public class TicTacActivity extends AppCompatActivity {
                 // If need be (and only if no game already in play), pick a first player.
                 gameStateMap.mutateItem("turn", new Mutator() {
                     @Override
-                    public JSONObject onApplied(long flowId, JSONObject currentData) {
+                    public JSONObject onApplied(JSONObject currentData) {
                         Timber.d(currentData.toString());
                         if (!currentData.keys().hasNext())
                             return TicTacActivity.UnaryJson("X");
                         else
                             return null;  // i.e. do not change the current turn.
                     }
-                }, System.currentTimeMillis(), new SuccessListener<Map.Item>() {
+                }, new SuccessListener<Map.Item>() {
                     @Override
                     public void onSuccess(Map.Item item) {
                         statusView.setText("Up next is Player " + item.getData().optString("value", "<corrupt>"));
@@ -360,7 +368,7 @@ public class TicTacActivity extends AppCompatActivity {
                     @Override
                     public void onError(ErrorInfo e) {
                         // Likely, our mutator returned 'null', aborting this mutation. Double-check.
-                        gameStateMap.getItem("turn", 0, new SuccessListener<Map.Item>() {
+                        gameStateMap.getItem("turn", new SuccessListener<Map.Item>() {
                             @Override
                             public void onSuccess(Map.Item item) {
                                 statusView.setText("Joined during the turn of Player " + item.getData().optString("value", "<corrupt>"));
@@ -373,6 +381,10 @@ public class TicTacActivity extends AppCompatActivity {
                         });
                     }
                 });
+            }
+            @Override
+            public void onError(ErrorInfo errorInfo) {
+                statusView.setText("FAILED TO OBTAIN MAP");
             }
         });
     }

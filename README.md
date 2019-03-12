@@ -21,7 +21,7 @@ Run
 
 ### Wire in your Token Service
 
-Set the value of `SERVER_TOKEN_URL` in sync-quickstart-android/gradle.properties file to point to a valid Access-Token server. If you're using one of the quickstarts to provide tokens, you'll probably want to use [`ngrok`](http://ngrok.io) to direct a publicly-accessible URL to your localhost service.
+Set the value of `ACCESS_TOKEN_SERVICE_URL` in sync-quickstart-android/gradle.properties file to point to a valid Access-Token server. If you're using one of the quickstarts to provide tokens, you'll probably want to use [`ngrok`](http://ngrok.io) to direct a publicly-accessible URL to your localhost service.
 
 ```bash
 $ ngrok http localhost:4567
@@ -30,13 +30,13 @@ $ ngrok http localhost:4567
 Your `gradle.properties` file should look something like this, borrowing from the output of the above.
 
 ```
-SERVER_TOKEN_URL=http://9349392.ngrok.io/token
+ACCESS_TOKEN_SERVICE_URL=http://9349392.ngrok.io/token
 ```
 
 You can also pass this address to gradle during the build.
 
 ```bash
-$ gradle -PSERVER_TOKEN_URL=http://9349392.ngrok.io/token build
+$ gradle -ACCESS_TOKEN_SERVICE_URL=http://9349392.ngrok.io/token build
 ```
 
 ### Build
