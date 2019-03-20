@@ -353,11 +353,15 @@ public class TicTacActivity extends AppCompatActivity {
                 gameStateMap.mutateItem("turn", new Mutator() {
                     @Override
                     public JSONObject onApplied(JSONObject currentData) {
-                        Timber.d(currentData.toString());
-                        if (!currentData.keys().hasNext())
-                            return TicTacActivity.UnaryJson("X");
-                        else
-                            return null;  // i.e. do not change the current turn.
+                        if (currentData != null) {
+                            Timber.d(currentData.toString());
+                            if (!currentData.keys().hasNext())
+                                return TicTacActivity.UnaryJson("X");
+                            else
+                                return null;  // i.e. do not change the current turn.
+                        } else {
+                            return TicTacActivity.UnaryJson("X"); // there was nothing so start anew
+                        }
                     }
                 }, new SuccessListener<Map.Item>() {
                     @Override
