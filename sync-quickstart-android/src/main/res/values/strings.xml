@@ -3,4 +3,7 @@
     <string name="error_retrieving_access_token">Cannot retrieve token</string>
     <string name="new_game">Start new game</string>
     <string name="shutdown_client">Shutdown Sync Client</string>
+    <string name="simulate_crash">Simulate crash</string>
+    <string name="simulate_crash_in_sync_client">in SyncClient.cpp</string>
+    <string name="simulate_crash_in_ts_client">in TSClient.cpp</string>
 </resources>
