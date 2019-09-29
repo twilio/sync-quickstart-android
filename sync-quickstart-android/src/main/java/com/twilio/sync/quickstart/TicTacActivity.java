@@ -11,6 +11,8 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.ndk.CrashlyticsNdk;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.twilio.sync.Document;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class TicTacActivity extends AppCompatActivity {
@@ -53,6 +56,8 @@ public class TicTacActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Timber.plant(new Timber.DebugTree());
+        Timber.d("onCreate");
+        Fabric.with(getApplicationContext(), new Crashlytics(), new CrashlyticsNdk());
 
         setContentView(R.layout.activity_tic_tac);
 
