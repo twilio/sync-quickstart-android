@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -28,6 +30,7 @@ import com.twilio.sync.Mutator;
 import com.twilio.sync.Options;
 import com.twilio.sync.SuccessListener;
 import com.twilio.sync.SyncClient;
+import com.twilio.sync.quickstart.utils.SyncClientUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +42,9 @@ import java.util.Random;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
+
+import static com.twilio.sync.quickstart.utils.SyncClientUtils.Where.SYNC_CLIENT_CPP;
+import static com.twilio.sync.quickstart.utils.SyncClientUtils.Where.TS_CLIENT_CPP;
 
 public class TicTacActivity extends AppCompatActivity {
     private SyncClient syncClient;
@@ -101,6 +107,26 @@ public class TicTacActivity extends AppCompatActivity {
         }
 
         authenticateAndStartSync();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.tictak, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_crash_in_sync_client:
+                SyncClientUtils.simulateCrash(syncClient, SYNC_CLIENT_CPP);
+                return true;
+
+            case R.id.action_crash_in_ts_client:
+                SyncClientUtils.simulateCrash(syncClient, TS_CLIENT_CPP);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private String generateRandomIdentity() {
