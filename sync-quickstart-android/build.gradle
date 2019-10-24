@@ -44,7 +44,7 @@ configurations {
 }
 
 dependencies {
-    implementation 'com.twilio:sync-android-with-symbols:0.8.5'
+    implementation 'com.twilio:sync-android-with-symbols:0.8.6'
     implementation "com.android.support:appcompat-v7:$androidSupportVersion"
     implementation 'com.koushikdutta.ion:ion:2.1.7'
     implementation 'com.jakewharton.timber:timber:4.3.0'
