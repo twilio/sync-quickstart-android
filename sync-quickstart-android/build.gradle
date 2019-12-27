@@ -30,8 +30,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     lintOptions {
@@ -44,9 +44,9 @@ configurations {
 }
 
 dependencies {
-    implementation 'com.twilio:sync-android-with-symbols:0.8.6'
-    implementation "com.android.support:appcompat-v7:$androidSupportVersion"
-    implementation 'com.koushikdutta.ion:ion:2.1.7'
+    implementation "androidx.appcompat:appcompat:$androidXVersion"
+    implementation 'com.twilio:sync-android:0.8.6'
+    implementation 'com.koushikdutta.ion:ion:3.0.8'
     implementation 'com.jakewharton.timber:timber:4.3.0'
 
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
