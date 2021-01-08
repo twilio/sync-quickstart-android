@@ -39,22 +39,6 @@ You can also pass this address to gradle during the build.
 ./gradlew assembleDebug -PACCESS_TOKEN_SERVICE_URL=http://example.com/get-token/
 ```
 
-### Optionally set the value of fabric API key
-
-If you want to see crashes reported to crashlytics set the value of `fabricApiKey` in sync-quickstart-android/gradle.properties file to your api key.
-
-example:
-
-```
-fabricApiKey=0123456789abcdef
-```
-
-You can also pass this parameter to gradle during build without need to create a properties file, as follows:
-
-```
-./gradlew assembleDebug -PfabricApiKey=0123456789abcdef
-```
-
 ### Build
 
 Run `./gradlew assembleDebug` to fetch Twilio Sync SDK files and build application.
