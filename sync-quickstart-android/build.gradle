@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
 apply plugin: 'maven'
 
 def ACCESS_TOKEN_SERVICE_URL = project.hasProperty('ACCESS_TOKEN_SERVICE_URL') ? "\""+project.getProperty('ACCESS_TOKEN_SERVICE_URL')+"\"" : "\"http://companyfoo.com/token\""
@@ -48,19 +47,6 @@ dependencies {
     implementation 'com.twilio:sync-android:0.8.6'
     implementation 'com.koushikdutta.ion:ion:3.0.8'
     implementation 'com.jakewharton.timber:timber:4.3.0'
-
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
-    implementation 'com.crashlytics.sdk.android:crashlytics-ndk:2.1.0'
-}
-
-crashlytics {
-    enableNdk true
-
-    println "androidNdkOut \"$projectDir/build/intermediates/merged_native_libs/debug/out/lib\""
-    androidNdkOut "$projectDir/build/intermediates/merged_native_libs/debug/out/lib"
-
-    println "androidNdkLibsOut \"$projectDir/build/intermediates/stripped_native_libs/debug/out/lib\""
-    androidNdkLibsOut "$projectDir/build/intermediates/stripped_native_libs/debug/out/lib"
 }
 
 tasks.withType(JavaCompile) {
