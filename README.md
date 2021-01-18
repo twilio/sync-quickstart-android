@@ -8,16 +8,12 @@ What you'll minimally need to get started:
 
 - A clone of this repository
 - A running instance of the backend quickstart of your choice ([Ruby](https://github.com/TwilioDevEd/sync-quickstart-ruby), [Python](https://github.com/TwilioDevEd/sync-quickstart-python), [Node.js](https://github.com/TwilioDevEd/sync-quickstart-node), [Java](https://github.com/TwilioDevEd/sync-quickstart-java), [C#](https://github.com/TwilioDevEd/sync-quickstart-csharp), or [PHP](https://github.com/TwilioDevEd/sync-quickstart-php)) to issue [Access Tokens](https://www.twilio.com/docs/api/sync/identity-and-access-tokens)
-- A functioning Gradle installation
 
 ## Building
 
-### Set up gradle wrapper to use correct gradle version.
+### Add google-services.json
 
-Run
-```
-./gradlew wrapper
-```
+[Generate google-services.json](https://firebase.google.com/docs/crashlytics/upgrade-sdk?platform=android#add-config-file) file and place it under `sync-quickstart-android/`.
 
 ### Wire in your Token Service
 
@@ -39,26 +35,30 @@ You can also pass this address to gradle during the build.
 ./gradlew assembleDebug -PACCESS_TOKEN_SERVICE_URL=http://example.com/get-token/
 ```
 
-### Optionally set the value of fabric API key
-
-If you want to see crashes reported to crashlytics set the value of `fabricApiKey` in sync-quickstart-android/gradle.properties file to your api key.
-
-example:
-
-```
-fabricApiKey=0123456789abcdef
-```
-
-You can also pass this parameter to gradle during build without need to create a properties file, as follows:
-
-```
-./gradlew assembleDebug -PfabricApiKey=0123456789abcdef
-```
-
 ### Build
 
 Run `./gradlew assembleDebug` to fetch Twilio Sync SDK files and build application.
 
 ### Android Studio
 
-You can import this project into Android Studio if you so desire by selecting `Import Project (Eclipse ADT, Gradle, etc)` from the menu and then build as you would ordinarily. The token server setup is still important.
+You can import this project into Android Studio and then build as you would ordinarily. The token server setup is still important.
+
+### Optionally setup Firebase Crashlytics
+
+If you want to see crashes reported to crashlytics:
+1. [Set up Crashlytics in the Firebase console](https://firebase.google.com/docs/crashlytics/get-started?platform=android#setup-console)
+
+2. In order to see native crashes symbolicated upload symbols into the Firebase console:
+```
+./gradlew sync-quickstart-android:assembleBUILD_VARIANT
+./gradlew sync-quickstart-android:uploadCrashlyticsSymbolFileBUILD_VARIANT
+```
+for example to upload symbols for `debug` build type run:
+```
+./gradlew sync-quickstart-android:assembleDebug
+./gradlew sync-quickstart-android:uploadCrashlyticsSymbolFileDebug
+```
+
+Select "Simulate crash" from the app menu to force an app crash.
+
+[Read more](https://firebase.google.com/docs/crashlytics/upgrade-sdk?platform=android#optional_step_set_up_ndk_crash_reporting) about Android NDK crash reports.
