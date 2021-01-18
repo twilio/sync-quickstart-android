@@ -14,8 +14,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.ndk.CrashlyticsNdk;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.twilio.sync.Document;
@@ -41,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
-import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 import static com.twilio.sync.quickstart.utils.SyncClientUtils.Where.SYNC_CLIENT_CPP;
@@ -64,7 +61,6 @@ public class TicTacActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Timber.plant(new Timber.DebugTree());
         Timber.d("onCreate");
-        Fabric.with(getApplicationContext(), new Crashlytics(), new CrashlyticsNdk());
 
         setContentView(R.layout.activity_tic_tac);
 
@@ -119,6 +115,9 @@ public class TicTacActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_crash_in_java:
+                throw new RuntimeException("Simulated crash");
+
             case R.id.action_crash_in_sync_client:
                 SyncClientUtils.simulateCrash(syncClient, SYNC_CLIENT_CPP);
                 return true;

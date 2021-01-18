@@ -6,6 +6,10 @@
         app:showAsAction="never">
         <menu>
             <item
+                android:id="@+id/action_crash_in_java"
+                android:title="@string/simulate_crash_in_java"
+                app:showAsAction="never" />
+            <item
                 android:id="@+id/action_crash_in_sync_client"
                 android:title="@string/simulate_crash_in_sync_client"
                 app:showAsAction="never" />
