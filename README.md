@@ -13,11 +13,11 @@ What you'll minimally need to get started:
 
 ### Add google-services.json
 
-[Generate google-services.json](https://firebase.google.com/docs/crashlytics/upgrade-sdk?platform=android#add-config-file) file and place it under `sync-quickstart-android/`.
+[Generate google-services.json](https://support.google.com/firebase/answer/7015592?hl=en) file and place it under `sync-quickstart-android/`.
 
 ### Wire in your Token Service
 
-Set the value of `ACCESS_TOKEN_SERVICE_URL` in sync-quickstart-android/gradle.properties file to point to a valid Access-Token server. If you're using one of the quickstarts to provide tokens, you'll probably want to use [`ngrok`](http://ngrok.io) to direct a publicly-accessible URL to your localhost service.
+Set the value of `ACCESS_TOKEN_SERVICE_URL` in `gradle.properties` file to point to a valid Access-Token server. If you're using one of the quickstarts to provide tokens, you'll probably want to use [`ngrok`](http://ngrok.io) to direct a publicly-accessible URL to your localhost service.
 
 ```bash
 $ ngrok http localhost:4567
