@@ -45,9 +45,6 @@ configurations {
 
 dependencies {
     implementation "androidx.appcompat:appcompat:$androidXVersion"
-    implementation 'com.twilio:sync-android:0.8.6'
-    implementation 'com.koushikdutta.ion:ion:3.0.8'
-    implementation 'com.jakewharton.timber:timber:4.3.0'
 
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     implementation 'com.crashlytics.sdk.android:crashlytics-ndk:2.1.0'
@@ -61,6 +58,9 @@ crashlytics {
 
     println "androidNdkLibsOut \"$projectDir/build/intermediates/stripped_native_libs/debug/out/lib\""
     androidNdkLibsOut "$projectDir/build/intermediates/stripped_native_libs/debug/out/lib"
+    implementation 'com.twilio:sync-android:0.9.0'
+    implementation 'com.koushikdutta.ion:ion:3.1.0'
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 }
 
 tasks.withType(JavaCompile) {
