@@ -1,15 +1,15 @@
 wrapper {
-    gradleVersion = '6.7'
+    gradleVersion = '7.5.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath 'com.google.gms:google-services:4.3.4'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.4.1'
     }
@@ -17,17 +17,14 @@ buildscript {
 
 allprojects {
     repositories {
-        maven {
-            url "https://twilio.bintray.com/releases"
-        }
-        jcenter()
+        mavenCentral()
         google()
     }
 }
 
 ext {
     androidMinSdkVersion = 21
-    androidCompileSdkVersion = 30
-    androidXVersion = "1.2.0"
-    androidBuildToolsVersion = "30.0.2"
+    androidCompileSdkVersion = 33
+    androidXVersion = "1.6.1"
+    androidBuildToolsVersion = "33.0.0"
 }
