@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-import com.twilio.sync.ErrorInfo;
 import com.twilio.sync.EventContext;
 import com.twilio.sync.SuccessListener;
 import com.twilio.sync.SyncClient;
@@ -30,6 +29,7 @@ import com.twilio.sync.SyncMapObserver;
 import com.twilio.sync.SyncMutator;
 import com.twilio.sync.SyncOptions;
 import com.twilio.sync.quickstart.utils.SyncClientUtils;
+import com.twilio.util.ErrorInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
